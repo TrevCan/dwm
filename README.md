@@ -1,4 +1,4 @@
-# Luke's build of dwm
+# Hector's build of Luke's build of suckless' dwm
 
 ## FAQ
 
