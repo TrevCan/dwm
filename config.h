@@ -69,22 +69,45 @@ static int resizehints = 0;    /* 1 means respect size hints in tiled resizals *
 
 #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
 #include "vanitygaps.c"
+#include "layouts.c"
+
 static const Layout layouts[] = {
 	/* symbol     arrange function */
+	// [0]
 	{ "[]=",	tile },			/* Default: Master on left, slaves on right */
+
+	// [1]
 	{ "TTT",	bstack },		/* Master on top, slaves on bottom */
 
+
+	// [2]
 	{ "[@]",	spiral },		/* Fibonacci spiral */
+
+	// [3]
 	{ "[\\]",	dwindle },		/* Decreasing in size right and leftward */
 
+	// [4]
 	{ "[D]",	deck },			/* Master on left, slaves in monocle-like mode on right */
+
+	// [5]
 	{ "[M]",	monocle },		/* All windows on top of eachother */
 
+	// [6]
 	{ "|M|",	centeredmaster },		/* Master in middle, slaves on sides */
+
+	// [7]
 	{ ">M>",	centeredfloatingmaster },	/* Same but master floats */
 
+	// [8]
 	{ "><>",	NULL },			/* no layout function means floating behavior */
+
+	// [9]
 	{ NULL,		NULL },
+
+	
+	// [10]
+	{ "HHH",      grid },
+
 };
 
 /* key definitions */
@@ -163,6 +186,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_BackSpace,	spawn,		SHCMD("sysact") },
 
 	{ MODKEY,			XK_c,		view,		{0} },
+	{ MODKEY,			XK_Tab,		view,		{0} },
 	/* { MODKEY|ShiftMask,		XK_Tab,		spawn,		SHCMD("") }, */
 	{ MODKEY,			XK_q,		killclient,	{0} },
 	{ MODKEY|ShiftMask,		XK_q,		spawn,		SHCMD("sysact") },
@@ -180,6 +204,8 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_u,		setlayout,	{.v = &layouts[5]} }, /* monocle */
 	{ MODKEY,			XK_i,		setlayout,	{.v = &layouts[6]} }, /* centeredmaster */
 	{ MODKEY|ShiftMask,		XK_i,		setlayout,	{.v = &layouts[7]} }, /* centeredfloatingmaster */
+	{ MODKEY|ShiftMask,		XK_minus,		setlayout,	{.v = &layouts[10]} }, /* grid */
+
 	{ MODKEY,			XK_o,		incnmaster,     {.i = +1 } },
 	{ MODKEY|ShiftMask,		XK_o,		incnmaster,     {.i = -1 } },
 	{ MODKEY,			XK_p,			spawn,		SHCMD("mpc toggle") },
@@ -220,7 +246,7 @@ static Key keys[] = {
 	/* V is automatically bound above in STACKKEYS */
 	{ MODKEY,			XK_b,		togglebar,	{0} },
 	/* { MODKEY|ShiftMask,		XK_b,		spawn,		SHCMD("") }, */
-	{ MODKEY,			XK_n,		spawn,		SHCMD(TERMINAL " -e nvim -c VimwikiIndex") },
+	{ MODKEY,			XK_n,		spawn,		SHCMD(TERMINAL " -e vim -c VimwikiIndex") },
 	{ MODKEY|ShiftMask,		XK_n,		spawn,		SHCMD(TERMINAL " -e newsboat; pkill -RTMIN+6 dwmblocks") },
 	{ MODKEY,			XK_m,		spawn,		SHCMD(TERMINAL " -e cmus") },
 	{ MODKEY|ShiftMask,		XK_m,		spawn,		SHCMD("pamixer -t; kill -44 $(pidof dwmblocks)") },
@@ -326,7 +352,7 @@ static Button buttons[] = {
 	{ ClkStatusText,        0,              Button5,        sigdwmblocks,   {.i = 5} },
 	{ ClkStatusText,        ShiftMask,      Button1,        sigdwmblocks,   {.i = 6} },
 #endif
-	{ ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e nvim ~/.local/src/dwmblocks/config.h") },
+	{ ClkStatusText,        ShiftMask,      Button3,        spawn,          SHCMD(TERMINAL " -e vim ~/.local/src/dwmblocks/config.h") },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        defaultgaps,	{0} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
