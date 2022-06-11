@@ -3,6 +3,7 @@
 /* Constants */
 #define TERMINAL "st"
 #define TERMCLASS "St"
+#define RSRC_MONITOR "bpytop"
 
 /* appearance */
 static unsigned int borderpx  = 3;        /* border pixel of windows */
@@ -12,7 +13,7 @@ static unsigned int gappiv    = 10;       /* vert inner gap between windows */
 static unsigned int gappoh    = 10;       /* horiz outer gap between windows and screen edge */
 static unsigned int gappov    = 30;       /* vert outer gap between windows and screen edge */
 static int swallowfloating    = 0;        /* 1 means swallow floating windows by default */
-static int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
+static int smartgaps          = 1;        /* 1 means no outer gap when there is only one window */
 static int showbar            = 1;        /* 0 means no bar */
 static int topbar             = 1;        /* 0 means bottom bar */
 static char *fonts[]          = { 
@@ -20,6 +21,10 @@ static char *fonts[]          = {
 	"monospace:size=12" 					,
 	"JoyPixels:pixelsize=12:antialias=true:autohint=true" 	,
 };
+
+static const int scalepreview 		= 4; 
+// tag preview scaling
+
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
 static char normfgcolor[]           = "#bbbbbb";
@@ -53,13 +58,11 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	*/
 	/* class    instance      title       	 tags mask    isfloating   isterminal  noswallow  monitor */
-	{ "Gimp",     NULL,       NULL,       	    1 << 8,       0,           0,         0,        -1 },
-	{ TERMCLASS,  NULL,       NULL,       	    0,            0,           1,         0,        -1 },
+	{ "Gimp",     NULL,       NULL,       	    1 << 8,       0,           0,         1,        -1 },
+//	{ TERMCLASS,  NULL,       NULL,       	    0,            0,           1,         1,        -1 },
 	{ NULL,       NULL,       "Event Tester",   0,            0,           0,         1,        -1 },
 	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,           1,         0,        -1 },
 	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,           1,         0,        -1 },
-	{ NULL,     NULL,       "Zoom - Free Account",       	    1 << 8,       1,           0,         1,        -1 },
-	{ NULL,     NULL,       "Zoom Meeting",       	    1 << 8,       1,           0,         1,        -1 },
 };
 
 /* layout(s) */
@@ -190,12 +193,12 @@ static Key keys[] = {
 	/* { MODKEY|ShiftMask,		XK_Tab,		spawn,		SHCMD("") }, */
 	{ MODKEY,			XK_q,		killclient,	{0} },
 	{ MODKEY|ShiftMask,		XK_q,		spawn,		SHCMD("sysact") },
-	{ MODKEY,			XK_w,		spawn,		SHCMD("$BROWSER") },
-	{ MODKEY|ShiftMask,		XK_w,		spawn,		SHCMD(TERMINAL " -e sudo networkmanager_dmenu") },
-	{ MODKEY,			XK_e,		spawn,		SHCMD(TERMINAL " -e neomutt ; pkill -RTMIN+12 dwmblocks; rmdir ~/.abook") },
+	{ MODKEY,			XK_w,		spawn,		SHCMD("dmenuchromium-user") },
+	{ MODKEY|ShiftMask,		XK_w,		spawn,		SHCMD("dmenuchromium-user") },
+	{ MODKEY,			XK_e,		spawn,		SHCMD("dmenucomms") },
 	{ MODKEY|ShiftMask,		XK_e,		spawn,		SHCMD(TERMINAL " -e abook -C ~/.config/abook/abookrc --datafile ~/.config/abook/addressbook") },
 	{ MODKEY,			XK_r,		spawn,		SHCMD(TERMINAL " -e lf") },
-	{ MODKEY|ShiftMask,		XK_r,		spawn,		SHCMD(TERMINAL " -e htop") },
+	{ MODKEY|ShiftMask,		XK_r,		spawn,		SHCMD(TERMINAL " -e btop") },
 	{ MODKEY,			XK_t,		setlayout,	{.v = &layouts[0]} }, /* tile */
 	{ MODKEY|ShiftMask,		XK_t,		setlayout,	{.v = &layouts[1]} }, /* bstack */
 	{ MODKEY,			XK_y,		setlayout,	{.v = &layouts[2]} }, /* spiral */
@@ -221,7 +224,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_a,		defaultgaps,	{0} },
 	{ MODKEY,			XK_s,		togglesticky,	{0} },
 	/* { MODKEY|ShiftMask,		XK_s,		spawn,		SHCMD("") }, */
-	{ MODKEY,			XK_d,		spawn,          SHCMD("dmenu_run") },
+	{ MODKEY,			XK_d,		spawn,          SHCMD("dmenu_run -i -c") },
 	{ MODKEY|ShiftMask,		XK_d,		spawn,		SHCMD("type-clip -p") },
 	{ MODKEY,			XK_f,		togglefullscr,	{0} },
 	{ MODKEY|ShiftMask,		XK_f,		setlayout,	{.v = &layouts[8]} },
@@ -231,6 +234,10 @@ static Key keys[] = {
 	/* J and K are automatically bound above in STACKEYS */
 	{ MODKEY,			XK_l,		focusmon,	{.i = +1 } },
 	{ MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } },
+	//{ MODKEY,			47,			shiftview,	{ .i = 1 } },
+	{ MODKEY,			XK_ntilde,	shiftview,	{ .i = 1 } },
+	//{ MODKEY,			XK_ñ,	shiftview,	{ .i = 1 } },
+	// 47 is the keycode for ñ and ;
 	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } },
 	{ MODKEY,			XK_apostrophe,	togglescratch,	{.ui = 1} },
 	/* { MODKEY|ShiftMask,		XK_apostrophe,	spawn,		SHCMD("") }, */
@@ -282,11 +289,13 @@ static Key keys[] = {
 	{ MODKEY,			XK_F10,		spawn,		SHCMD("dmenuumount") },
 	{ MODKEY,			XK_F11,		spawn,		SHCMD("mpv --no-cache --no-osc --no-input-default-bindings --profile=low-latency --input-conf=/dev/null --title=webcam $(ls /dev/video[0,2,4,6,8] | tail -n 1)") },
 	{ MODKEY,			XK_F12,		spawn,		SHCMD("remaps -r && notify-send \\\"⌨️ Keyboard remapping...\\\" \\\"Re-running keyboard defaults for any newly plugged-in keyboards.\\\"") },
+	{ 0,			XK_F12,		spawn,		SHCMD(TERMINAL " -e f12-key-run") },
 	{ MODKEY,			XK_space,	zoom,		{0} },
 	{ MODKEY|ShiftMask,		XK_space,	togglefloating,	{0} },
 
-	{ 0,				XK_Print,	spawn,		SHCMD("maim pic-full-$(date '+%y%m%d-%H%M-%S').png") },
-	{ ShiftMask,			XK_Print,	spawn,		SHCMD("maimpick") },
+	{ 0,				XK_Print,	spawn,		SHCMD("maim -m 1 pic-full-$(date '+%y%m%d-%H%M-%S').png") },
+	{ ShiftMask,				XK_Print,	spawn,		SHCMD("maim -u -m 1 pic-full-$(date '+%y%m%d-%H%M-%S').png") },
+	//{ ShiftMask,			XK_Print,	spawn,		SHCMD("maimpick") },
 	{ MODKEY,			XK_Print,	spawn,		SHCMD("dmenurecord") },
 	{ MODKEY|ShiftMask,		XK_Print,	spawn,		SHCMD("dmenurecord kill") },
 	{ MODKEY,			XK_Delete,	spawn,		SHCMD("dmenurecord kill") },
@@ -307,7 +316,7 @@ static Key keys[] = {
 	{ 0, XF86XK_PowerOff,		spawn,		SHCMD("sysact") },
 	{ 0, XF86XK_Calculator,		spawn,		SHCMD(TERMINAL " -e bc -l") },
 	{ 0, XF86XK_Sleep,		spawn,		SHCMD("sudo -A zzz") },
-	{ 0, XF86XK_WWW,		spawn,		SHCMD("$BROWSER") },
+	{ 0, XF86XK_WWW,		spawn,		SHCMD("$BROWSER ") },
 	{ 0, XF86XK_DOS,		spawn,		SHCMD(TERMINAL) },
 	{ 0, XF86XK_ScreenSaver,	spawn,		SHCMD("slock & xset dpms force off; mpc pause; pauseallmpv") },
 	{ 0, XF86XK_TaskPane,		spawn,		SHCMD(TERMINAL " -e htop") },
@@ -318,8 +327,10 @@ static Key keys[] = {
 	{ 0, XF86XK_TouchpadToggle,	spawn,		SHCMD("(synclient | grep 'TouchpadOff.*1' && synclient TouchpadOff=0) || synclient TouchpadOff=1") },
 	{ 0, XF86XK_TouchpadOff,	spawn,		SHCMD("synclient TouchpadOff=1") },
 	{ 0, XF86XK_TouchpadOn,		spawn,		SHCMD("synclient TouchpadOff=0") },
-	{ 0, XF86XK_MonBrightnessUp,	spawn,		SHCMD("xbacklight -inc 15") },
-	{ 0, XF86XK_MonBrightnessDown,	spawn,		SHCMD("xbacklight -dec 15") },
+	{ 0, XF86XK_MonBrightnessUp,	spawn,		SHCMD("xbacklight -inc 5") },
+	{ 0, XF86XK_MonBrightnessDown,	spawn,		SHCMD("xbacklight -dec 5") },
+
+	{ 0, XF86XK_Bluetooth,			spawn,		SHCMD("/home/trevorlarbs/.local/bin/bluetooth-toggle") },
 
 	/* { MODKEY|Mod4Mask,              XK_h,      incrgaps,       {.i = +1 } }, */
 	/* { MODKEY|Mod4Mask,              XK_l,      incrgaps,       {.i = -1 } }, */
